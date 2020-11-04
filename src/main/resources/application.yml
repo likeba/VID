@@ -1,0 +1,65 @@
+spring:
+  profiles:
+    active: local
+  servlet:
+    multipart:
+      max-file-size: 107374182400
+      max-request-size: 107374182400
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://@ip:@port/@databaseName?serverTimeZone=Asia/Seoul&useSSL=false
+#    driver-class-name: oracle.jdbc.OracleDriver
+#    url: jdbc:oracle:thin:@//@ip:@port/@databaseName    
+#    driver-class-name: com.mysql.cj.jdbc.Driver
+#    url: jdbc:mysql://@ip:@port/@databaseName?serverTimeZone=Asia/Seoul&useSSL=false
+    
+    mysql:
+      driver-class-name: com.mysql.cj.jdbc.Driver
+      url: jdbc:mysql://@ip:@port/@databaseName?serverTimeZone=Asia/Seoul&useSSL=false
+
+    oracle:
+      driver-class-name: oracle.jdbc.OracleDriver
+      url: jdbc:oracle:thin:@//@ip:@port/@databaseName
+
+logging:
+  file: ../../logs
+
+management:
+  endpoint:
+    metrics:
+      enabled: true
+    prometheus:
+      enabled: true
+  endpoints:
+    web:
+      exposure:
+        include: "*"
+  metrics:
+    export:
+      prometheus:
+        enabled: true
+
+agent:
+  worker:
+    port: 8083
+
+---
+
+spring:
+  profiles: stage
+
+server:
+  port: 8092
+
+---
+
+spring:
+  profiles: dev
+
+server:
+  port: 8082
+
+---
+
+spring:
+  properties: local

@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE configuration>
+<configuration scan="true" scanPeriod="30 seconds">
+
+	<!-- log configuration -->
+	<!--  <property name="log.dir" value="/sw/daplsw/dapl-libupdate-agent/logs" />  -->
+	<property name="log.dir" value="../logs" />
+	<property name="log.file.prefix" value="svr_" />
+	<property name="log.file.instance.name" value="dapl" />
+	<property name="log.file.service.name" value="dapl-data_agent" />
+	<property name="log.file.extension.suffix" value=".log" />
+	<property name="log.file.date.format" value="%d{yyyy-MM-dd}" />
+	<property name="log.line.pattern" value="%d{yyyy-MM-dd/HH:mm:ss.SSS,Asia/Seoul} [%thread] %-5level %logger{36}: %M %L - %msg%n" />
+	<property name="log.file.max.history" value="365" />
+
+	<!-- log combination -->
+	<property name="log.file.base.path" value="${log.dir}/${log.file.prefix}${log.file.instance.name}_${log.file.service.name}" />
+	<property name="log.file.all.suffix" value="_all" />
+	<property name="log.file.error.suffix" value="_error" />
+	<property name="log.file.date.suffix" value=".${log.file.date.format}${log.file.extension.suffix}" />
+	<property name="log.file.default.path" value="${log.file.base.path}${log.file.extension.suffix}" />
+	<property name="log.file.all.path" value="${log.file.base.path}${log.file.all.suffix}${log.file.extension.suffix}" />
+	<property name="log.file.error.path" value="${log.file.base.path}${log.file.error.suffix}${log.file.extension.suffix}" />
+	<property name="log.file.default.path.pattern" value="${log.file.base.path}${log.file.date.suffix}" />
+	<property name="log.file.all.path.pattern" value="${log.file.base.path}${log.file.all.suffix}${log.file.date.suffix}" />
+	<property name="log.file.error.path.pattern" value="${log.file.base.path}${log.file.error.suffix}${log.file.date.suffix}" />
+
+	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
+		<resetJUL>true</resetJUL>
+	</contextListener>
+
+	<jmxConfigurator/>
+
+	<appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+		<encoder>
+			<pattern>${log.line.pattern}</pattern>
+		</encoder>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>trace</level>
+		</filter>
+	</appender>
+
+	<appender name="dailyRollingFileAppender" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>${log.file.default.path}</File>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<FileNamePattern>${log.file.default.path.pattern}</FileNamePattern>
+			<maxHistory>${log.file.max.history}</maxHistory>
+		</rollingPolicy>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>INFO</level>
+		</filter>
+		<encoder>
+			<pattern>${log.line.pattern}</pattern>
+		</encoder>
+	</appender>
+
+	<appender name="dailyRollingFileAppenderError" class="ch.qos.logback.core.rolling.RollingFileAppender">
+		<File>${log.file.error.path}</File>
+		<rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+			<FileNamePattern>${log.file.all.path.pattern}</FileNamePattern>
+			<maxHistory>${log.file.max.history}</maxHistory>
+		</rollingPolicy>
+		<filter class="ch.qos.logback.classic.filter.ThresholdFilter">
+			<level>ERROR</level>
+		</filter>
+		<encoder>
+			<pattern>${log.line.pattern}</pattern>
+		</encoder>
+	</appender>
+
+	<root level="INFO">
+		<appender-ref ref="console"/>
+		<appender-ref ref="dailyRollingFileAppender"/>
+		<!-- <appender-ref ref="dailyRollingFileAppenderAll"/> -->
+		<appender-ref ref="dailyRollingFileAppenderError"/>
+	</root>
+
+	<logger name="java.sql.Statement">
+		<level value="DEBUG" />
+	</logger>
+	<logger name="java.sql.PreparedStatement">
+		<level value="DEBUG" />
+	</logger>
+	<logger name="java.sql.CallableStatement">
+		<level value="DEBUG" />
+	</logger>
+	<logger name="java.sql.ResultSet">
+		<level value="DEBUG" />
+	</logger>
+	<logger name="org.springframework.web.client.RestTemplate">
+		<level value="DEBUG" />
+	</logger>
+
+</configuration>

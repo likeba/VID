@@ -406,7 +406,7 @@ public class DatasetServiceImpl implements DatasetService {
 		if (!targetLocation.toFile().exists()) {
 			targetLocation.toFile().mkdirs();
 		}
-		return targetLocation.resolve(dataSetInfo.getFileNm() + "_" + DateUtils.getFullDateAndTime() + ".csv");    // 업로드 될 파일 명(파일 명-systemId.확장자)
+		return targetLocation.resolve(dataSetInfo.getFileNm() + "_" + DateUtils.getFullDateAndTime() + ".dat");    // 업로드 될 파일 명(파일 명-systemId.확장자)
 	}
 
 	/**
@@ -512,7 +512,11 @@ public class DatasetServiceImpl implements DatasetService {
 		
 		return dataObjectInfo;
 	}
-	
+
+	/**
+	 * apm 파일을 이동한다.
+	 * 임시 저장경로 -> 저장경로
+	 */
 	@Override
 	public void moveApmDataSet() {
 		log.info(">>>>> [APM DataSet Check] Start.....");
@@ -550,16 +554,24 @@ public class DatasetServiceImpl implements DatasetService {
 					log.info(">>>>> [APM DataSet Check] End...");
 				}
 			}catch(Exception e) {
-				log.error(e.getMessage(), e);
 				transactionManager.rollback(transactionStatus);
 				logService.insertLog(rootUser, LogType.SCHEDULER, LogMessageType.ERROR_DATASET_APM_MOVE);
+				log.error(">>>>> apm dataset move error", e);
 				throw e;
 			}
 			
 			transactionManager.commit(transactionStatus);
 		}
 	}
-	
+
+	/**
+	 * db insert : aip_data_set_file_map
+	 * apm 파일의 정보를 테이블에 적재한다.
+	 *
+	 * @param sourceFile 소스 파일
+	 * @param targetFile 타겟 파일
+	 * @param datasetId 데이터셋 아이디
+	 */
 	private void insertApmDataSetFileMap(File sourceFile, File targetFile, String datasetId) {
 		
 		Date now = DateUtils.getNow();
@@ -576,7 +588,15 @@ public class DatasetServiceImpl implements DatasetService {
 		aipDataSetFileMapMapper.insertSelective(dataSetFileMap);
 	}
 
-	private String insertApmDataSet(AipUser rootUser, String fileName) {
+	/**
+	 * db insert : aip_data_set
+	 * apm 파일의 정보를 테이블에 적재한다.
+	 *
+	 * @param aipUser 사용자
+	 * @param fileName 파일이름
+	 * @return 생성된 데이터셋 아이디
+	 */
+	private String insertApmDataSet(AipUser aipUser, String fileName) {
 		
 		String dataSetId = DateUtils.getSystemId();
 		Date now = DateUtils.getNow();
@@ -586,8 +606,8 @@ public class DatasetServiceImpl implements DatasetService {
 		dataSet.setDataNm(fileName);
 		dataSet.setDataDesc(fileName);
 		dataSet.setDataTp(DataSetType.APM.getValue());
-		dataSet.setOwnerId(rootUser.getUserId());
-		dataSet.setRegId(rootUser.getUserId());
+		dataSet.setOwnerId(aipUser.getUserId());
+		dataSet.setRegId(aipUser.getUserId());
 		dataSet.setExptStDt(DateUtils.getDateOnlyString(now));
 		dataSet.setExptEdDt(DateUtils.getDateOnlyString(LocalDate.now().plusMonths(3L)));
 		dataSet.setPubFl(FlagType.TRUE.getValue());

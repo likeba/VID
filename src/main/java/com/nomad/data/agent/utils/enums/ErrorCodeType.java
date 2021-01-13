@@ -101,16 +101,16 @@ public enum ErrorCodeType implements EnumValue<Object> {
     DATA_EXTRACT_FAIL("5002", HttpStatus.INTERNAL_SERVER_ERROR, "데이터 추출을 실패했습니다."),
     
     //Git
-    GIT_CLONE_ERROR("6000", HttpStatus.INTERNAL_SERVER_ERROR, "클론하는 과정에서 문제가 발생하였습니다."),
-    GIT_COMMIT_ERROR("6001", HttpStatus.INTERNAL_SERVER_ERROR, "커밋하는 과정에서 문제가 발생하였습니다."),
-    GIT_ADD_ERROR("6002", HttpStatus.INTERNAL_SERVER_ERROR, "변경사항 추가하는 과정에서 문제가 발생하였습니다."),
-    GIT_PUSH_ERROR("6003", HttpStatus.INTERNAL_SERVER_ERROR, "푸쉬하는 과정에서 문제가 발생하였습니다."),
-    GIT_INIT_ERROR("6004", HttpStatus.INTERNAL_SERVER_ERROR, "깃 초기화 하는 과정에서 문제가 발생하였습니다."),
+    GIT_CLONE_ERROR("6000", HttpStatus.INTERNAL_SERVER_ERROR, "클론하는 과정에서 문제가 발생했습니다."),
+    GIT_COMMIT_ERROR("6001", HttpStatus.INTERNAL_SERVER_ERROR, "커밋하는 과정에서 문제가 발생했습니다."),
+    GIT_ADD_ERROR("6002", HttpStatus.INTERNAL_SERVER_ERROR, "변경사항 추가하는 과정에서 문제가 발생했습니다."),
+    GIT_PUSH_ERROR("6003", HttpStatus.INTERNAL_SERVER_ERROR, "푸쉬하는 과정에서 문제가 발생했습니다."),
+    GIT_INIT_ERROR("6004", HttpStatus.INTERNAL_SERVER_ERROR, "깃 초기화 하는 과정에서 문제가 발생했습니다."),
     
     //Gitlab
     GITLAB_CREATE_REPOSITORY_ERROR("7001", HttpStatus.INTERNAL_SERVER_ERROR, "깃랩저장소 생성에 문제가 발생하였습니다."),
-    GITLAB_GET_PROJECT_FAILED("7002", HttpStatus.INTERNAL_SERVER_ERROR, "깃랩저장소 가져오는 과정에서 오류가 발생하였습니다."),
-    GITLAB_DELETE_PROJECT_FAILED("7003", HttpStatus.INTERNAL_SERVER_ERROR, "깃랩저장소 삭제 과정에서 오류가 발생하였습니다."),
+    GITLAB_GET_PROJECT_FAILED("7002", HttpStatus.INTERNAL_SERVER_ERROR, "깃랩저장소 가져오는 과정에서 오류가 발생했습니다."),
+    GITLAB_DELETE_PROJECT_FAILED("7003", HttpStatus.INTERNAL_SERVER_ERROR, "깃랩저장소 삭제 과정에서 오류가 발생했습니다."),
     
     //SystemLog
     SYSTEM_LOG_GET_GET_FILES_ERROR("0801", HttpStatus.INTERNAL_SERVER_ERROR, "로그파일목록을 조회하는 과정에서 오류가 발생했습니다."),

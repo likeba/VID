@@ -45,37 +45,37 @@ public class DatasetController {
 
 	@Autowired
 	private UserService userService;
-	
+
 	@Autowired
 	private DatasetService datasetService;
-	
+
 	@ApiOperation(value = "데이터셋/다중 파일 업로드", notes = "다중 데이터셋 파일 업로드", tags = "01. 데이터셋")
 	@RequestMapping(method = RequestMethod.POST, value = "upload/files")
 	public ResponseEntity<AipDataSetKey> uploadFiles(
 			@ApiParam(required = true, value = "토큰", defaultValue = "")
-            @Valid
-            @NotEmpty
-            @RequestHeader final String tkn,
-            @ModelAttribute DataSetCreateReq req,
-            @ApiParam(required = true, value = "업로드 할 파일", defaultValue = "")
-            @NotEmpty
-            @RequestParam(name = "files") MultipartFile[] files) {
-		
-		
-		if(files.length == 0) {
+			@Valid
+			@NotEmpty
+			@RequestHeader final String tkn,
+			@ModelAttribute DataSetCreateReq req,
+			@ApiParam(required = true, value = "업로드 할 파일", defaultValue = "")
+			@NotEmpty
+			@RequestParam(name = "files") MultipartFile[] files) {
+
+
+		if (files.length == 0) {
 			log.error(">>>>> no upload files...");
 			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
 		}
-		
-		AipDataSetKey result = datasetService.uploadDataSetFiles(userService.getAipUser(tkn, true), files, req); 
-		if (result == null) {
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
-        }
 
-        return new ResponseEntity<>(result, HttpStatus.OK);
+		AipDataSetKey result = datasetService.uploadDataSetFiles(userService.getAipUser(tkn, true), files, req);
+		if (result == null) {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
+
+		return new ResponseEntity<>(result, HttpStatus.OK);
 	}
-	
-	
+
+
 	@SuppressWarnings("rawtypes")
 	@ApiOperation(value = "데이터셋/데이터셋 삭제", notes = "데이터셋 삭제", tags = "01. 데이터셋")
 	@RequestMapping(method = RequestMethod.POST, value = "delete", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
@@ -105,7 +105,7 @@ public class DatasetController {
 			@RequestParam(name = "fileName") String fileName,
 			HttpServletRequest request) {
 
-		if(StringUtils.isEmpty(fileName)) {
+		if (StringUtils.isEmpty(fileName)) {
 			log.error(">>>>> no export file...");
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
@@ -114,72 +114,83 @@ public class DatasetController {
 		String contentType = null;
 		try {
 			contentType = request.getServletContext().getMimeType(resource.getFile().getAbsolutePath());
-		}catch(IOException ioe) {
+		} catch (IOException ioe) {
 			log.error(">>>>> Could not determine file type.", ioe);
 			throw new CustomException(ErrorCodeType.FILE_PROCESS_HANDLE);
 		}
 
-		if(null == contentType) {
+		if (null == contentType) {
 			contentType = "application/octet-stream";
 		}
 
 		log.info(">>>>> Dataset file exported successfully... (File Name: {})", resource.getFilename());
 
 		return ResponseEntity.ok()
-							.contentType(MediaType.parseMediaType(contentType))
-							.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; fileName=\"" + resource.getFilename() + "\"")
-							.body(resource);
+				.contentType(MediaType.parseMediaType(contentType))
+				.header(HttpHeaders.CONTENT_DISPOSITION, "attachment; fileName=\"" + resource.getFilename() + "\"")
+				.body(resource);
 	}
-	
+
 	@ApiOperation(value = "데이터 파일 전송", notes = "데이터셋 파일을 워커서버 내부 워크스페이스로 전송한다.", tags = "01-데이터셋")
 	@RequestMapping(method = RequestMethod.POST, value = "transfer", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity transferDataset(
 			@NotEmpty
-			@RequestBody DatasetTransferReq req){
+			@RequestBody DatasetTransferReq req) {
 
 		datasetService.transferDatasetToWorkspace(req);
 
 		return new ResponseEntity(HttpStatus.OK);
 	}
-	
-	
+
+
 	@SuppressWarnings("rawtypes")
 	@ApiOperation(value = "데이터셋/데이터셋 추출", notes = "데이터셋 추출", tags = "01. 데이터셋")
 	@RequestMapping(method = RequestMethod.POST, value = "extract", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity extractDataSet(
 			@ApiParam(required = true, value = "토큰", defaultValue = "")
-            @Valid
-            @NotEmpty
-            @RequestHeader final String tkn,
-            @Valid
-            @NotEmpty
-            @RequestBody AipDataSetKey req) {
+			@Valid
+			@NotEmpty
+			@RequestHeader final String tkn,
+			@Valid
+			@NotEmpty
+			@RequestBody AipDataSetKey req) {
 
 		try {
 			datasetService.extractDataSet(userService.getAipUser(tkn, true), req);
-		}catch(CustomException e) {
+		} catch (CustomException e) {
 			log.error(e.getMessage(), e);
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 		return new ResponseEntity<>(HttpStatus.OK);
 	}
-	
+
 	@ApiOperation(value = "데이터셋/데이터셋 미리보기", notes = "데이터셋 미리보기", tags = "01. 데이터셋")
 	@RequestMapping(method = RequestMethod.GET, value = "overview", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<AipDataObjectInfo> overview(
 			@ApiParam(required = true, value = "토큰", defaultValue = "")
-            @Valid
-            @NotEmpty
-            @RequestHeader final String tkn,
+			@Valid
+			@NotEmpty
+			@RequestHeader final String tkn,
 			@Valid
 			@ModelAttribute
-			DataSetOverviewReq req) {
-	
+					DataSetOverviewReq req) {
+
 		AipDataObjectInfo extractDatas = datasetService.overview(userService.getAipUser(tkn, true), req);
-		if(ObjectUtils.isEmpty(extractDatas)) {
+		if (ObjectUtils.isEmpty(extractDatas)) {
 			return new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR);
 		}
 
 		return new ResponseEntity<>(extractDatas, HttpStatus.OK);
+	}
+
+	@ApiOperation(value = "데이터셋/경로이동/apm", notes = "apm 데이터셋 파일 경로 이동", tags = "01. 데이터셋")
+	@RequestMapping(method = RequestMethod.POST, value = "move/apm", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	public ResponseEntity moveApmDataSet() {
+		try {
+			datasetService.moveApmDataSet();
+		} catch (Exception e) {
+			return new ResponseEntity(HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		return new ResponseEntity(HttpStatus.OK);
 	}
 }

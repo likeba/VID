@@ -74,7 +74,9 @@ public class DockerImageController {
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
-    
+
+    @ApiOperation(value = "도커이미지/도커이미지/조회", notes = "도커이미지/도커이미지/조회", tags = "03-도커이미지")
+    @RequestMapping(method = RequestMethod.GET, value = "list", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
     public ResponseEntity<List<String>> list() {
     	return new ResponseEntity(dockerImageService.list(), HttpStatus.OK);
     }

@@ -43,6 +43,9 @@ agent:
   worker:
     port: 8083
 
+server:
+  max-http-header-size: 40KB
+
 ---
 
 spring:

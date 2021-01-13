@@ -20,7 +20,7 @@ import io.swagger.annotations.ApiOperation;
 
 @RestController
 @RequestMapping("/admin/v1/system")
-public class SystemContoller {
+public class SystemController {
 
 	@Autowired
 	SystemLogService systemLogService;

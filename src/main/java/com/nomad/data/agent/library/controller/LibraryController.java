@@ -83,7 +83,7 @@ public class LibraryController {
 		try {
 			libraryService.deleteLibrary(req);
 		}catch(Exception e) {
-			log.error(e.getMessage(), e);
+			log.error(">>>>> Library delete error", e);
 			throw new CustomException(ErrorCodeType.FILE_DELETE_ERROR);
 		}
 		

@@ -7,6 +7,6 @@ import com.nomad.data.agent.domain.dao.common.AipUser;
 
 public interface AlgorithmService {
 	
-	String upload(AipUser user, AipAlgorithmUploadReq req, MultipartFile file);
+	String upload(AipUser aipUser, AipAlgorithmUploadReq req, MultipartFile file);
 	
 }

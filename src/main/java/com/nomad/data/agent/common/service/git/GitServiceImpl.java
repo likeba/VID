@@ -21,103 +21,133 @@ import lombok.extern.slf4j.Slf4j;
 @Service
 @Slf4j
 public class GitServiceImpl implements GitService {
-	
+
 	@Override
 	public void commitAndPush(GitCommitAndPushReq req) throws Exception {
+
+		String localPath = req.getLocalPath();
+		String gitUsername = req.getGitUsername();
+		String gitEmail = req.getGitEmail();
+		String gitPassword = req.getGitPassword();
+		String message = req.getMessage();
+
 		try {
-			this.initAndSetOrigin(req.getLocalPath(), req.getRemoteUri());
-			
-			this.add(req.getLocalPath(), ".");
-			
-			this.commit(req.getLocalPath(), req.getGitUsername(), req.getGitEmail(), req.getMessage());
-			
-			this.push(req.getLocalPath(), req.getGitUsername(), req.getGitPassword());
-		}catch(Exception e) {
+			this.initAndSetOrigin(localPath, req.getRemoteUri());
+			this.add(localPath, ".");
+			this.commit(localPath, gitUsername, gitEmail, message);
+			this.push(localPath, gitUsername, gitPassword);
+		} catch (Exception e) {
 			log.error(e.getMessage(), e);
 		}
 	}
 
-	private void push(String localPath, String gitUsername, String gitPassword) {
-		log.info(">>>>> git push start");
-		
-		try {
-			Git.open(new File(localPath))
-				.push()
-				.setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitUsername, gitPassword))
-				.call();
-		}catch(GitAPIException ge) {
-			log.error(ge.getMessage(), ge);
-			throw new CustomException(ErrorCodeType.GIT_PUSH_ERROR);
-		}catch(IOException ioe) {
-			log.error(ioe.getMessage(), ioe);
-			throw new CustomException(ErrorCodeType.FILE_NOT_FOUND);
-		}
-		
-	}
-
-	private void commit(String localPath, String gitUsername, String gitEmail, String message) {
-		log.info(">>>>> git commit start");
-		
-		try {
-			Git.open(new File(localPath))
-				.commit()
-				.setAuthor(gitUsername, gitEmail)
-				.setMessage(message)
-				.call();
-		}catch(GitAPIException ge) {
-			log.error(ge.getMessage(), ge);
-			throw new CustomException(ErrorCodeType.GIT_ADD_ERROR);
-		}catch(IOException ioe) {
-			log.error(ioe.getMessage(), ioe);
-			throw new CustomException(ErrorCodeType.FILE_NOT_FOUND);
-		}
-	}
-
+	/**
+	 * 깃 저장소에 변경사항을 추가한다.
+	 *
+	 * @param localPath   로컬경로
+	 * @param filePattern 파일패턴
+	 */
 	private void add(String localPath, String filePattern) {
 		log.info(">>>>> git add start");
-		
+
 		try {
 			Git.open(new File(localPath))
-				.add()
-				.addFilepattern(filePattern)
-				.call();
-		}catch(GitAPIException ge) {
-			log.error(ge.getMessage(), ge);
+					.add()
+					.addFilepattern(filePattern)
+					.call();
+		} catch (GitAPIException e) {
+			log.error(">>>>> git add api error", e);
 			throw new CustomException(ErrorCodeType.GIT_ADD_ERROR);
-		}catch(IOException ioe) {
-			log.error(ioe.getMessage(), ioe);
+		} catch (IOException e) {
+			log.error(">>>>> git add io error", e);
 			throw new CustomException(ErrorCodeType.FILE_NOT_FOUND);
 		}
 	}
 
+	/**
+	 * 깃 커밋을 한다.
+	 *
+	 * @param localPath 로컬경로
+	 * @param gitUsername 깃 사용자 이름
+	 * @param gitEmail 깃 사용자 이메일
+	 * @param message 깃 메시지
+	 */
+	private void commit(String localPath, String gitUsername, String gitEmail, String message) {
+		log.info(">>>>> git commit start");
+
+		try {
+			Git.open(new File(localPath))
+					.commit()
+					.setAuthor(gitUsername, gitEmail)
+					.setMessage(message)
+					.call();
+		} catch (GitAPIException e) {
+			log.error(">>>>> git commit api error", e);
+			throw new CustomException(ErrorCodeType.GIT_ADD_ERROR);
+		} catch (IOException e) {
+			log.error(">>>>> git commit io error", e);
+			throw new CustomException(ErrorCodeType.FILE_NOT_FOUND);
+		}
+	}
+
+	/**
+	 * 깃 푸시를 한다.
+	 *
+	 * @param localPath 로컬경로
+	 * @param gitUsername 깃 사용자 이름
+	 * @param gitPassword 깃 비밀번호
+	 */
+	private void push(String localPath, String gitUsername, String gitPassword) {
+		log.info(">>>>> git push start");
+
+		try {
+			Git.open(new File(localPath))
+					.push()
+					.setCredentialsProvider(new UsernamePasswordCredentialsProvider(gitUsername, gitPassword))
+					.call();
+		} catch (GitAPIException e) {
+			log.error(">>>>> git push api error", e);
+			throw new CustomException(ErrorCodeType.GIT_PUSH_ERROR);
+		} catch (IOException e) {
+			log.error(">>>>> git push io error", e);
+			throw new CustomException(ErrorCodeType.FILE_NOT_FOUND);
+		}
+	}
+
+	/**
+	 * 깃 저장소 초기화하고 원격 저장소를 설정한다.
+	 *
+	 * @param localPath 로컬경로
+	 * @param remoteUri 원격저장소
+	 */
 	private void initAndSetOrigin(String localPath, String remoteUri) {
 		log.info(">>>>> git init and set origin start");
-		
+
 		log.info(">>>>> localPath: {}", localPath);
 		log.info(">>>>> remoteUri: {}", remoteUri);
-		
+
 		try {
 			File[] fileList = Paths.get(localPath).toFile().listFiles();
-			
-			for(File file : fileList) {
+
+			for (File file : fileList) {
 				if (file.isDirectory() && file.getName().equals(".git")) {
 					FileUtils.deleteDirectory(file);
+					break;
 				}
 			}
-			
+
 			Git git = Git.init()
-						.setDirectory(new File(localPath))
-						.call();
-			
+					.setDirectory(new File(localPath))
+					.call();
+
 			git.remoteAdd()
-				.setName("origin")
-				.setUri(new URIish(remoteUri))
-				.call();
-			
-		}catch (GitAPIException | URISyntaxException e) {
-			log.error(e.getMessage(), e);
+					.setName("origin")
+					.setUri(new URIish(remoteUri))
+					.call();
+
+		} catch (GitAPIException | URISyntaxException e) {
+			log.error(">>>>> git init and set origin error", e);
 			throw new CustomException(ErrorCodeType.GIT_INIT_ERROR);
 		}
 	}
-
 }

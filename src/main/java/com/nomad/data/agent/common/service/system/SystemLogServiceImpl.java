@@ -24,7 +24,7 @@ public class SystemLogServiceImpl implements SystemLogService {
 	String systemLogPath;
 	
 	@Value("${system.log.default.file}")
-	String systemLogDefailtFile;
+	String systemLogDefaultFile;
 	
 	@Override
 	public AipLogFilesInfo getLogFiles() {
@@ -37,7 +37,7 @@ public class SystemLogServiceImpl implements SystemLogService {
 			for(String file: fileList) {
 				
 				if(file.substring(file.length()-4).equals(".log")) {
-					if(file.equals(systemLogDefailtFile)) {
+					if(file.equals(systemLogDefaultFile)) {
 						logFilesInfo.setDefaultLog(file);
 					}else {
 						logFileList.add(file);

@@ -40,17 +40,20 @@ public class RestApiUtils {
     }
 
     public static String makeUri(String target, String port, String agentApiType){
-        String url = null;
+        return makeUri(target, Integer.parseInt(port), agentApiType);
+    }
 
+    public static String makeUri(String server, Integer port, AgentApiType agentApiType) {
+        return makeUri(server, port, agentApiType.getValue().toString());
+    }
+
+    public static String makeUri(String server, Integer port, String agentApiType) {
         try {
-            url = new URL("http", target, Integer.parseInt(port), agentApiType).toString();
-
+            return new URL("http", server, port, agentApiType).toString();
         } catch (MalformedURLException e) {
-            log.error(">>>>> make url error", e);
-            throw new CustomException(ErrorCodeType.API_MAKE_URL_ERROR);
+            log.error("( makeUri ) MalformedURLException !! $server={}, $port={}, $agent.api.type={}", server, port, agentApiType, e);
         }
-
-        return url;
+        throw new CustomException(ErrorCodeType.API_MAKE_URL_ERROR);
     }
 
     private static ResponseEntity<?> callApiResult(String httpUrl, Object req, HttpMethod httpMethod, AipHttpHeaders httpHeaders) {

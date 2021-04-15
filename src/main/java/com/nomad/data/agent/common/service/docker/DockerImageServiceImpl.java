@@ -1,21 +1,21 @@
 package com.nomad.data.agent.common.service.docker;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
+import com.nomad.data.agent.common.dto.AipHttpHeaders;
+import com.nomad.data.agent.common.dto.req.AipDockerImageCreateReq;
+import com.nomad.data.agent.common.dto.req.AipDockerImageDeleteReq;
+import com.nomad.data.agent.common.dto.req.AipDockerRegistryImageDeleteReq;
+import com.nomad.data.agent.config.exception.CustomException;
+import com.nomad.data.agent.domain.dao.common.*;
+import com.nomad.data.agent.domain.mappers.common.AipDockerImageMapper;
+import com.nomad.data.agent.domain.mappers.common.AipImgLibMapMapper;
+import com.nomad.data.agent.domain.mappers.common.AipWorkspaceMapper;
+import com.nomad.data.agent.helper.AipServerHelper;
+import com.nomad.data.agent.log.service.LogService;
+import com.nomad.data.agent.utils.*;
+import com.nomad.data.agent.utils.enums.*;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
@@ -27,77 +27,36 @@ import org.springframework.transaction.support.DefaultTransactionDefinition;
 import org.springframework.util.ObjectUtils;
 import org.springframework.web.multipart.MultipartFile;
 
-import com.nomad.data.agent.common.dto.AipHttpHeaders;
-import com.nomad.data.agent.common.dto.req.AipDockerImageCreateReq;
-import com.nomad.data.agent.common.dto.req.AipDockerImageDeleteReq;
-import com.nomad.data.agent.common.dto.req.AipDockerRegistryImageDeleteReq;
-import com.nomad.data.agent.config.exception.CustomException;
-import com.nomad.data.agent.domain.dao.common.AipDockerImage;
-import com.nomad.data.agent.domain.dao.common.AipDockerImageExample;
-import com.nomad.data.agent.domain.dao.common.AipDockerImageKey;
-import com.nomad.data.agent.domain.dao.common.AipImgLibMap;
-import com.nomad.data.agent.domain.dao.common.AipImgLibMapExample;
-import com.nomad.data.agent.domain.dao.common.AipUser;
-import com.nomad.data.agent.domain.dao.common.AipWorkspaceExample;
-import com.nomad.data.agent.domain.mappers.common.AipDockerImageMapper;
-import com.nomad.data.agent.domain.mappers.common.AipImgLibMapMapper;
-import com.nomad.data.agent.domain.mappers.common.AipWorkspaceMapper;
-import com.nomad.data.agent.log.service.LogService;
-import com.nomad.data.agent.utils.CommandUtils;
-import com.nomad.data.agent.utils.CompressUtils;
-import com.nomad.data.agent.utils.DateUtils;
-import com.nomad.data.agent.utils.DockerUtils;
-import com.nomad.data.agent.utils.FileUtils;
-import com.nomad.data.agent.utils.RestApiUtils;
-import com.nomad.data.agent.utils.enums.AgentApiType;
-import com.nomad.data.agent.utils.enums.CodeEditorType;
-import com.nomad.data.agent.utils.enums.ErrorCodeType;
-import com.nomad.data.agent.utils.enums.FlagType;
-import com.nomad.data.agent.utils.enums.ImageType;
-import com.nomad.data.agent.utils.enums.LogMessageType;
-import com.nomad.data.agent.utils.enums.LogType;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
-import lombok.extern.slf4j.Slf4j;
-
-@Service
 @Slf4j
+@Service
+@RequiredArgsConstructor
+@SuppressWarnings("SpellCheckingInspection")
 public class DockerImageServiceImpl implements DockerImageService {
 
-	@Autowired
-	DockerUtils dockerUtils;
+	private final LogService serviceLogs;
 
-	@Autowired
-	CompressUtils compressUtils;
+	private final PlatformTransactionManager platformTransactionManager;
 
-	@Autowired
-	AipDockerImageMapper aipDockerImageMapper;
+	private final AipDockerImageMapper aipDockerImageMapper;
+	private final AipImgLibMapMapper aipImgLibMapMapper;
+	private final AipWorkspaceMapper aipWorkspaceMapper;
 
-	@Autowired
-	AipImgLibMapMapper aipImgLibMapMapper;
-
-	@Autowired
-	AipWorkspaceMapper aipWorkspaceMapper;
-
-	@Autowired
-	LogService logService;
-
-	@Autowired
-	PlatformTransactionManager transactionManager;
-
-	@Value("${dapldt.ip}")
-	String dockerRegistryIp;
-
-	@Value("${daplwk1p.ip}")
-	String daplwk1pIp;
-
-	@Value("${daplwk2p.ip}")
-	String daplwk2pIp;
-
-	@Value("${agent.daplwk1p.port}")
-	String daplwk1pPort;
-
-	@Value("${agent.daplwk2p.port}")
-	String daplwk2pPort;
+	private final AipServerHelper helper;
+	private final DockerUtils dockerUtils;
+	private final CompressUtils compressUtils;
 
 	@Value("${docker.registry.port}")
 	String dockerRegistryPort;
@@ -126,7 +85,7 @@ public class DockerImageServiceImpl implements DockerImageService {
 
 		if (ObjectUtils.isEmpty(aipDockerImage)) {
 			log.error(">>>>> aipdockerimage is empty");
-			logService.insertLog(user, LogType.DOCKER, LogMessageType.ERROR_COMMON_NOT_FOUND_ID);
+			serviceLogs.insertLog(user, LogType.DOCKER, LogMessageType.ERROR_COMMON_NOT_FOUND_ID);
 			throw new CustomException(ErrorCodeType.COMMON_NOT_FOUND_ID);
 		}
 
@@ -145,20 +104,20 @@ public class DockerImageServiceImpl implements DockerImageService {
 
 			this.execRegistryGarbageCollect();
 
-			TransactionStatus transactionStatus = transactionManager.getTransaction(new DefaultTransactionDefinition());
+			TransactionStatus transactionStatus = platformTransactionManager.getTransaction(new DefaultTransactionDefinition());
 
 			try {
 				this.deleteImageLibMapInfo(dockerImageId);
 				this.deleteDockerImageInfo(dockerImageName, dockerImageTag);
 
-				logService.insertLog(user, LogType.DOCKER, LogMessageType.OK_DB_DELETE);
+				serviceLogs.insertLog(user, LogType.DOCKER, LogMessageType.OK_DB_DELETE);
 
-				transactionManager.commit(transactionStatus);
+				platformTransactionManager.commit(transactionStatus);
 
 			} catch (Exception e) {
 				log.error(">>>>> delete docker image database error", e);
-				transactionManager.rollback(transactionStatus);
-				logService.insertLog(user, LogType.DOCKER, LogMessageType.ERROR_DB_DELETE_HANDLE);
+				platformTransactionManager.rollback(transactionStatus);
+				serviceLogs.insertLog(user, LogType.DOCKER, LogMessageType.ERROR_DB_DELETE_HANDLE);
 			}
 
 		} catch (Exception e) {
@@ -255,7 +214,7 @@ public class DockerImageServiceImpl implements DockerImageService {
 			Integer dockerImageLibMapResult = this.insertImageLibMapInfo(dockerImageId);
 
 			if (dockerImageResult > 0 && dockerImageLibMapResult > 0) {
-				logService.insertLog(user, LogType.DOCKER, LogMessageType.OK_DB_INSERT);
+				serviceLogs.insertLog(user, LogType.DOCKER, LogMessageType.OK_DB_INSERT);
 				return getKey(dockerImageId);
 			}
 			throw new CustomException(ErrorCodeType.DB_INSERT_HANDLE);
@@ -352,8 +311,10 @@ public class DockerImageServiceImpl implements DockerImageService {
 	private String getDockerImageId(String dockerImageName, String dockerImageTag) {
 		log.debug(">>>>> get docker image id start");
 
+		AipServer dataServer = helper.findFirstServerBy(ServerType.DATA);
+
 		String apiType = String.format("/v2/%s/manifests/%s", dockerImageName, dockerImageTag);
-		String uri = RestApiUtils.makeUri(dockerRegistryIp, dockerRegistryPort, apiType);
+		String uri = RestApiUtils.makeUri(dataServer.getPrvIp(), dockerRegistryPort, apiType);
 
 		log.info(">>>>> docker api uri:{}", uri);
 
@@ -385,9 +346,11 @@ public class DockerImageServiceImpl implements DockerImageService {
 	private void deleteRegistryImageByDockerApi(String dockerImageName, String dockerImageDigest) {
 		log.debug(">>>>> delete registry image by docker api start");
 
+		AipServer dataServer = helper.findFirstServerBy(ServerType.DATA);
+
 		String apiType = String.format("/v2/%s/manifests/%s", dockerImageName, dockerImageDigest);
 
-		String uri = RestApiUtils.makeUri(dockerRegistryIp, dockerRegistryPort, apiType);
+		String uri = RestApiUtils.makeUri(dataServer.getPrvIp(), dockerRegistryPort, apiType);
 
 		log.info(">>>>> delete docker image api uri:{}", uri);
 
@@ -669,27 +632,25 @@ public class DockerImageServiceImpl implements DockerImageService {
 		aipDockerImageDeleteReq.setDockerImageTag(dockerImageTag);
 
 		try {
-			ExecutorService executorService = Executors.newFixedThreadPool(2);
-
-			Future futureWk1p = RestApiUtils.callApiRunnableThread(
-					RestApiUtils.makeUri(daplwk1pIp, daplwk1pPort, AgentApiType.WORKER_DOCKER_IMAGE_DELETE),
-					aipDockerImageDeleteReq,
-					HttpMethod.POST,
-					null,
-					executorService);
-
-			Future futureWk2p = RestApiUtils.callApiRunnableThread(
-					RestApiUtils.makeUri(daplwk2pIp, daplwk2pPort, AgentApiType.WORKER_DOCKER_IMAGE_DELETE),
-					aipDockerImageDeleteReq,
-					HttpMethod.POST,
-					null,
-					executorService);
-
-			futureWk1p.get(10, TimeUnit.MINUTES);
-			futureWk2p.get(10, TimeUnit.MINUTES);
-
-			executorService.shutdown();
-
+			List<AipServer> workers = helper.findServersBy(ServerType.WORKER);
+			if (!ObjectUtils.isEmpty(workers)) {
+				ExecutorService executor = Executors.newFixedThreadPool(workers.size());
+				workers.forEach(worker -> {
+					RestApiUtils.callApiRunnableThread(
+							RestApiUtils.makeUri(worker.getPrvIp(), worker.getPort(), AgentApiType.WORKER_DOCKER_IMAGE_DELETE),
+							aipDockerImageDeleteReq,
+							HttpMethod.POST,
+							null,
+							executor
+					);
+				});
+				if (executor.awaitTermination(10, TimeUnit.MINUTES)) {
+					log.info("( deletePulledImageOnWorkerServer#awaitTermination ) done !! $docker.image.id={}, $docker.image.name={}, $docker.image.tag={}", dockerImageId, dockerImageName, dockerImageTag);
+				} else {
+					log.warn("( deletePulledImageOnWorkerServer#awaitTermination ) timeout !! $docker.image.id={}, $docker.image.name={}, $docker.image.tag={}", dockerImageId, dockerImageName, dockerImageTag);
+				}
+				executor.shutdown();
+			}
 		} catch (Exception e) {
 			log.error(">>>>> delete pulled image on worker server error:", e);
 			throw new CustomException(ErrorCodeType.API_CALL_ERROR_WRONG);
@@ -715,7 +676,7 @@ public class DockerImageServiceImpl implements DockerImageService {
 
 		long workspaceCount = aipWorkspaceMapper.countByExample(workspaceExample);
 
-		return workspaceCount > 0 ? true : false;
+		return workspaceCount > 0;
 	}
 
 	/**
@@ -786,7 +747,8 @@ public class DockerImageServiceImpl implements DockerImageService {
 	 * @date 2020.04.17
 	 */
 	private String getRegistryImageName(String dockerImageName) {
-		return String.format("%s:%s/%s", dockerRegistryIp, dockerRegistryPort, dockerImageName);
+		AipServer dataServer = helper.findFirstServerBy(ServerType.DATA);
+		return String.format("%s:%s/%s", dataServer.getPrvIp(), dockerRegistryPort, dockerImageName);
 	}
 }
 

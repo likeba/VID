@@ -1,5 +1,8 @@
 package com.nomad.data.agent.domain.dao.common;
 
+import lombok.Getter;
+import lombok.Setter;
+
 import java.math.BigDecimal;
 import java.util.Date;
 
@@ -26,6 +29,18 @@ public class AipServer extends AipServerKey {
     /**
      */
     private String serverTp;
+
+    /**
+     * 호스트 명
+     */
+    @Getter @Setter
+    private String host;
+
+    /**
+     * 서버 포트
+     */
+    @Getter @Setter
+    private Integer port;
 
     /**
      */

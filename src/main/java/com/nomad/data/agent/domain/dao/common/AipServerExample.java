@@ -536,6 +536,11 @@ public class AipServerExample {
             return (Criteria) this;
         }
 
+        public Criteria andHostEqualTo(String value) {
+            addCriterion("HOST =", value, "host");
+            return (Criteria) this;
+        }
+
         public Criteria andPrvIpIsNull() {
             addCriterion("PRV_IP is null");
             return (Criteria) this;

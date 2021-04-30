@@ -271,8 +271,11 @@ public class DatasetServiceImpl implements DatasetService {
 	public void transferDatasetToWorkspace(DatasetTransferReq req) {
 
 		AipServer worker = helper.findFirstServerBy(ServerType.WORKER);
+		AipServer server = helper.findFirstServerBy(req.getWorkspaceServerIp());
 
-		String url = RestApiUtils.makeUri(req.getWorkspaceServerIp(), worker.getPort(), AgentApiType.WORKER_FILE_UPLOAD);
+		String url = RestApiUtils.makeUri(server.getPrvIp(), worker.getPort(), AgentApiType.WORKER_FILE_UPLOAD);
+		log.info("( url : {}", url);
+		log.info(" (req.getWorkspaceServerIp()) : {} ", req.getWorkspaceServerIp());
 
 		MultiValueMap<String, Object> queryParam = new LinkedMultiValueMap<>();
 

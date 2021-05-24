@@ -8,11 +8,12 @@ spring:
   datasource:
     driver-class-name: org.mariadb.jdbc.Driver
     url: jdbc:mariadb://@ip:@port/@databaseName?serverTimeZone=Asia/Seoul&useSSL=false
-#    driver-class-name: oracle.jdbc.OracleDriver
-#    url: jdbc:oracle:thin:@//@ip:@port/@databaseName    
-#    driver-class-name: com.mysql.cj.jdbc.Driver
-#    url: jdbc:mysql://@ip:@port/@databaseName?serverTimeZone=Asia/Seoul&useSSL=false
-    
+    #    url: jdbc:mariadb://@ip:@port/@databaseName?serverTimeZone=UTC&useSSL=false
+    #    driver-class-name: oracle.jdbc.OracleDriver
+    #    url: jdbc:oracle:thin:@//@ip:@port/@databaseName
+    #    driver-class-name: com.mysql.cj.jdbc.Driver
+    #    url: jdbc:mysql://@ip:@port/@databaseName?serverTimeZone=Asia/Seoul&useSSL=false
+
     mysql:
       driver-class-name: com.mysql.cj.jdbc.Driver
       url: jdbc:mysql://@ip:@port/@databaseName?serverTimeZone=Asia/Seoul&useSSL=false
@@ -20,6 +21,11 @@ spring:
     oracle:
       driver-class-name: oracle.jdbc.OracleDriver
       url: jdbc:oracle:thin:@//@ip:@port/@databaseName
+
+    maria:
+      driver-class-name: org.mariadb.jdbc.Driver
+      url: jdbc:mariadb://@ip:@port/@databaseName?serverTimeZone=Asia/Seoul&useSSL=false
+
 
 logging:
   file: ../../logs

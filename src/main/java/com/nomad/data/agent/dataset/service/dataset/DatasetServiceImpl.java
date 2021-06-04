@@ -270,10 +270,8 @@ public class DatasetServiceImpl implements DatasetService {
 	@Override
 	public void transferDatasetToWorkspace(DatasetTransferReq req) {
 
-		AipServer worker = helper.findFirstServerBy(ServerType.WORKER);
-		AipServer server = helper.findFirstServerBy(ServerType.DATA,req.getWorkspaceServerIp());
-
-		String url = RestApiUtils.makeUri(server.getPrvIp(), worker.getPort(), AgentApiType.WORKER_FILE_UPLOAD);
+		AipServer worker = helper.findFirstServerBy(ServerType.WORKER, req.getWorkspaceServerIp());
+		String url = RestApiUtils.makeUri(worker.getPrvIp(), worker.getPort(), AgentApiType.WORKER_FILE_UPLOAD);
 		log.info("( url : {}", url);
 		log.info(" (req.getWorkspaceServerIp()) : {} ", req.getWorkspaceServerIp());
 

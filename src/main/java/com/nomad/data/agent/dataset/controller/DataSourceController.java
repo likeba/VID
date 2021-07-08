@@ -57,14 +57,14 @@ public class DataSourceController {
 	
 	
 	@ApiOperation(value = "데이터 소스/데이터 추출", notes = "데이터 소스/데이터 추출", tags = "데이터 소스")
-	@RequestMapping(method = RequestMethod.GET, value = "extract-datas", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
+	@RequestMapping(method = RequestMethod.POST, value = "extract-datas", produces = MediaType.APPLICATION_JSON_UTF8_VALUE)
 	public ResponseEntity<AipDataObjectInfo> extractData(
 			@ApiParam(required = true, value = "토큰", defaultValue = "")
             @Valid
             @NotEmpty
             @RequestHeader final String tkn,
 			@Valid
-			@ModelAttribute
+			@RequestBody
 			DataSourceExtractReq req) throws Exception {
 	
 		AipDataObjectInfo extractDatas = dataSourceService.extractDatas(userService.getAipUser(tkn, true), req);

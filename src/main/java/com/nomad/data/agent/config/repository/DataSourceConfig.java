@@ -4,10 +4,6 @@ import java.io.IOException;
 
 import javax.sql.DataSource;
 
-import org.apache.ibatis.session.SqlSessionFactory;
-import org.mybatis.spring.SqlSessionFactoryBean;
-import org.mybatis.spring.SqlSessionTemplate;
-import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -26,7 +22,6 @@ import lombok.extern.slf4j.Slf4j;
 @Slf4j
 @Configuration
 @EnableConfigurationProperties
-@MapperScan(value = "com.nomad.data.agent.domain.mappers.common", sqlSessionFactoryRef = "sqlSessionFactory")
 public class DataSourceConfig {
 	
 	@Value("${spring.datasource.driver-class-name}")
@@ -74,27 +69,6 @@ public class DataSourceConfig {
 			e.printStackTrace();
 		}
 		return dataSource;
-	}
-
-	@Bean(name = "sqlSessionFactory")
-	@Primary
-	public SqlSessionFactoryBean sqlSessionFactoryBean(@Qualifier("commonDataSource") DataSource dataSource, ApplicationContext applicationContext) throws IOException {
-		SqlSessionFactoryBean sqlSessionFactoryBean = new SqlSessionFactoryBean();
-		sqlSessionFactoryBean.setDataSource(dataSource);
-		sqlSessionFactoryBean.setMapperLocations(applicationContext.getResources("classpath:mappers/common/*.xml"));
-		return sqlSessionFactoryBean;
-	}
-
-	@Bean(name= "sqlSessionTemplate")
-	@Primary
-	public SqlSessionTemplate sqlSessionTemplate(SqlSessionFactory sqlSessionFactory) {
-		return new SqlSessionTemplate(sqlSessionFactory);
-	}
-
-	@Bean(name = "transactionManagerCommonMybatis")
-	@Primary
-	PlatformTransactionManager transactionManagerCommonMybatis(@Qualifier("commonDataSource") DataSource dataSource) {
-		return new DataSourceTransactionManager(dataSource);
 	}
 	
 }

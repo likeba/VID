@@ -3,80 +3,68 @@ package com.nomad.data.agent.dataset.service.dataset;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.core.io.Resource;
-import org.springframework.web.multipart.MultipartFile;
+public interface DataSetService {
 
-import com.nomad.data.agent.dataset.dto.info.AipDataObjectInfo;
-import com.nomad.data.agent.dataset.dto.req.DataSetCreateReq;
-import com.nomad.data.agent.dataset.dto.req.DataSetOverviewReq;
-import com.nomad.data.agent.dataset.dto.req.DatasetDeleteReq;
-import com.nomad.data.agent.dataset.dto.req.DatasetReadReq;
-import com.nomad.data.agent.dataset.dto.req.DatasetTransferReq;
-import com.nomad.data.agent.domain.dao.common.AipDataSetKey;
-import com.nomad.data.agent.domain.dao.common.AipUser;
-
-public interface DatasetService {
-
-
+		
 	/**
-	 * 다중 데이터셋 파일 업로드
-	 *
-	 * @param files 업로드 할 파일
+	 * 
+	 * @param database
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> getDatabaselist();
+	
+	/**
+	 * 
+	 * @param database
+	 * @return
+	 * @throws Exception
+	 */
+	public List<String> getTablelist(String database);
+	
+	/**
+	 * 
+	 * @param database
 	 * @return
 	 */
-	public AipDataSetKey uploadDataSetFiles(AipUser user, MultipartFile[] files, DataSetCreateReq req);
-
-
+	public List<Map<String,String>> getTableColumnlist(String database, String table);
+	
 	/**
-	 * 데이터셋 삭제
-	 *
-	 * @param req 삭제 할 데이터셋 파일
-	 */
-	public void deleteDatasetFile(DatasetDeleteReq req) throws Exception;
-
-
-	/**
-	 * 데이터셋 내보내기
-	 *
-	 * @param fileName 내보내기 할 데이터셋 파일
+	 * 
+	 * @param database
+	 * @param table
+	 * @param pk
 	 * @return
 	 */
-	public Resource loadFileAsResource(String fileName);
-
-	public List<Map<String, Object>> overviewFile(DatasetReadReq req);
-
+	public Map<String,String> getDataset(String database, String table, String pk);
+	
 	/**
-	 * 데이터셋 전송
-	 * 데이터 서버에 있는 데이터 셋을 워크스페이스가 위치한 서버로 전송한다.
-	 *
-	 * @param req
-	 */
-	public void transferDatasetToWorkspace(DatasetTransferReq req);
-
-
-	/**
-	 * 데이터셋 추출 및 데이터 셋 생성
-	 *
-	 * @param user
-	 * @param req
-	 */
-	public void extractDataSet(AipUser user, AipDataSetKey req);
-
-
-	/**
-	 * 데이터셋 파일 미리보기
-	 *
-	 * @param user
-	 * @param req
+	 * 
+	 * @param database
+	 * @param table
+	 * @param pk
 	 * @return
 	 */
-	public AipDataObjectInfo overview(AipUser user, DataSetOverviewReq req);
-
-
+	public Map<String,String> storeDataset(String database, String table, String pk);
+	
 	/**
-	 * APM 데이터셋 경로 이동
+	 * 
+	 * @return
 	 */
-	public void moveApmDataSet();
-
-
+	public List<String> getDatasetIds();
+	
+	/**
+	 * 
+	 * @param dataset_id
+	 * @return
+	 */
+	public Map<String,String> getStoredDataset(String dataset_id);
+	
+	/**
+	 * 
+	 * @param dataset_id
+	 * @return
+	 */
+	public Map<String,String> verifyDatasetIntegrity(String dataset_id);
+	
 }
